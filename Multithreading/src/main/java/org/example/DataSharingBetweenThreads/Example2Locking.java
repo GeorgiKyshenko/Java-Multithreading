@@ -1,6 +1,6 @@
 package org.example.DataSharingBetweenThreads;
 
-public class Example {
+public class Example2Locking {
     public static void main(String[] args) throws InterruptedException {
 
         InventoryCounter inventoryCounter = new InventoryCounter();
@@ -12,13 +12,6 @@ public class Example {
 
         incrementingThread.join();
         decrementingThread.join();
-        //structured like this (start -> then join) everytime we start the program we have unpredictable result.
-        // the core problem is that the inventoryCounter is shared object which makes "items"-member variable also shared, between the two threads
-        //and the second problem is that the operations both threads are calling (increment(), decrement()) are happening at the same time.
-
-        // the solution is, we have to provide atomic operations
-        /*we mark the critical sections (increment(), decrement()) with the keyword "synchronized", that's how we restrict multiple threads to execute a method
-        on a shared object (result -> only one thread at a time)*/
 
         System.out.println("We currently have " + inventoryCounter.getItem() + " items");
     }
@@ -55,19 +48,26 @@ public class Example {
 
     private static class InventoryCounter {
         private int item = 0;
+        final Object lock = new Object();
 
         //critical section
-        public synchronized void increment() {
-            item++;
+        public void increment() {
+            synchronized (this.lock) {
+                item++;
+            }
         }
 
         //critical section
-        public synchronized void decrement() {
-            item--;
+        public void decrement() {
+            synchronized (this.lock) {
+                item--;
+            }
         }
 
-        public synchronized int getItem() {
-            return item;
+        public int getItem() {
+            synchronized (this.lock) {
+                return item;
+            }
         }
     }
 }
